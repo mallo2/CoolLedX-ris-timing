@@ -1,28 +1,7 @@
-"""CoolLEDX driver package."""
-
 from enum import IntEnum, StrEnum
-
-__version__ = "0.0.1"
-
-__all__: list[str] = [
-    "Mode",
-    "HeightTreatment",
-    "WidthTreatment",
-    "HorizontalAlignment",
-    "VerticalAlignment",
-    "DEFAULT_COLOR",
-    "DEFAULT_BACKGROUND_COLOR",
-    "DEFAULT_MODE",
-    "DEFAULT_LOGGING",
-    "DEFAULT_WIDTH_TREATMENT",
-    "DEFAULT_HEIGHT_TREATMENT",
-    "DEFAULT_HORIZONTAL_ALIGNMENT",
-    "DEFAULT_VERTICAL_ALIGNMENT",
-]
 
 
 class Mode(IntEnum):
-    """The ways that text can move."""
 
     STATIC = 0x01
     LEFT = 0x02
@@ -57,7 +36,6 @@ class WidthTreatment(StrEnum):
 
 
 class HorizontalAlignment(StrEnum):
-    """Horizontal alignment of text/image on the sign."""
 
     LEFT = "left"
     CENTER = "center"
@@ -66,7 +44,6 @@ class HorizontalAlignment(StrEnum):
 
 
 class VerticalAlignment(StrEnum):
-    """Vertical alignment of text/image on the sign."""
 
     TOP = "top"
     CENTER = "center"
@@ -76,7 +53,6 @@ class VerticalAlignment(StrEnum):
 DEFAULT_COLOR = "white"
 DEFAULT_BACKGROUND_COLOR = "black"
 
-DEFAULT_MODE = -1  # -1 means don't touch
 DEFAULT_LOGGING = "INFO"
 DEFAULT_WIDTH_TREATMENT = WidthTreatment.LEFT_AS_IS
 DEFAULT_HEIGHT_TREATMENT = HeightTreatment.CROP_PAD
