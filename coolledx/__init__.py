@@ -4,6 +4,7 @@ __version__ = "0.0.1"
 
 
 class Mode(IntEnum):
+    """The ways that text can move"""
 
     STATIC = 0x01
     LEFT = 0x02
@@ -38,6 +39,7 @@ class WidthTreatment(StrEnum):
 
 
 class HorizontalAlignment(StrEnum):
+    """Horizontal alignment of text/image on the sign"""
 
     LEFT = "left"
     CENTER = "center"
@@ -46,15 +48,23 @@ class HorizontalAlignment(StrEnum):
 
 
 class VerticalAlignment(StrEnum):
+    """Vertical alignment of text/image on the sign"""
 
     TOP = "top"
     CENTER = "center"
     BOTTOM = "bottom"
 
 
+DEFAULT_START_COLOR_MARKER = "<"
+DEFAULT_END_COLOR_MARKER = ">"
+DEFAULT_FONT = "arial"  # calibri's better, if ya got it
+DEFAULT_FONT_SIZE = 13
 DEFAULT_COLOR = "white"
 DEFAULT_BACKGROUND_COLOR = "black"
+DEFAULT_ANIMATION_SPEED = 512
 
+DEFAULT_ON_OFF = 1
+DEFAULT_MODE = Mode.LEFT
 DEFAULT_LOGGING = "INFO"
 DEFAULT_WIDTH_TREATMENT = WidthTreatment.LEFT_AS_IS
 DEFAULT_HEIGHT_TREATMENT = HeightTreatment.CROP_PAD
