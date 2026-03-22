@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import abc
-import re
 from enum import Enum
 from typing import TYPE_CHECKING
 
@@ -25,6 +24,7 @@ from coolledx import (
     WidthTreatment,
 )
 
+from .basic_protocol import BasicProtocol
 from .hardware import CoolLED
 from .render import (
     create_animation_payload,
@@ -83,7 +83,8 @@ class CommandStatus(Enum):
     ACKNOWLEDGED = 2
     ERROR = 3
 
-class Command(abc.ABC):
+
+class Command(abc.ABC, BasicProtocol):
     """Abstract base class for commands."""
 
     command_status: CommandStatus = CommandStatus.NOT_STARTED
@@ -101,17 +102,6 @@ class Command(abc.ABC):
         if byte < ESCAPE_THRESHOLD:
             return bytearray([ESCAPE_PREFIX, byte + ESCAPE_OFFSET])
         return bytearray([byte])
-
-    @staticmethod
-    def escape_bytes(bytes_to_escape: bytearray) -> bytes:
-        """Escape special bytes in the data for transmission."""
-        data = re.sub(
-            re.compile(b"\x02", re.MULTILINE),
-            b"\x02\x06",
-            bytes_to_escape,
-        )  # needs to be first
-        data = re.sub(re.compile(b"\x01", re.MULTILINE), b"\x02\x05", data)
-        return re.sub(re.compile(b"\x03", re.MULTILINE), b"\x02\x07", data)
 
     def set_hardware(self, hardware: CoolLED) -> None:
         """Set the hardware type."""
