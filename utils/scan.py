@@ -20,6 +20,7 @@ MIN_MANUFACTURER_DATA_LENGTH = 9  # Minimum length to contain height and width d
 
 COOLLEDX_DEVICE_NAMES = [
     "CoolLEDX",
+    "CoolLEDUX",
     "CoolLEDM",
 ]  # There is also some device with name "FS" that is picked up as a Glowaler device.
 
