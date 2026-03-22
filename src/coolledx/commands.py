@@ -49,11 +49,6 @@ MAX_BYTE_VALUE = 0xFF
 MIN_BYTE_VALUE = 0x00
 MUSIC_BAR_COUNT = 8
 
-# Constants for color types
-COLOR_TYPE_MONO = 0x00
-COLOR_TYPE_7COLOR = 0x01
-COLOR_TYPE_FULLRGB = 0x02
-
 
 class CoolLedError(Exception):
     """Base class for exceptions in this module."""

@@ -15,7 +15,11 @@ Generally, there are five classes of hardware, as far as I can tell:
 """
 
 from .message_handler import MessageHandler, CoolLEDXMessageHandler, CoolLEDMMessageHandler, CoolLEDUMessageHandler, CoolLEDMXMessageHandler, CoolLEDUXMessageHandler
-from .commands import COLOR_TYPE_MONO
+
+# Constants for color types
+COLOR_TYPE_MONO = 0x00
+COLOR_TYPE_7COLOR = 0x01
+COLOR_TYPE_FULLRGB = 0x02
 
 class CoolLED:
     """Base class for CoolLED hardware definitions."""
@@ -62,11 +66,11 @@ class CoolLED:
     def is_implemented(self) -> bool:
         """Check if the hardware is implemented."""
         return False
-    
+
     def implementation_note(self) -> str:
         """Get the implementation note for the hardware."""
         return "This device has not been implemented - contributions welcome!"
-    
+
     def is_variable_height_width(self) -> bool:
         """Check if the hardware has variable height and width."""
         return True
@@ -188,11 +192,11 @@ class CoolLEDOriginal(CoolLED):
     def get_message_handler(self) -> MessageHandler:
         """Get the message handler for this hardware.  Uses the CoolLEDX message handler."""
         return CoolLEDXMessageHandler()
-    
+
     def is_variable_height_width(self) -> bool:
         """Check if the hardware has variable height and width."""
         return False
-    
+
     def get_device_height(self):
         """Return fixed 12pixel height."""
         return 12
@@ -216,11 +220,11 @@ class CoolLEDA(CoolLED):
     def get_message_handler(self) -> MessageHandler:
         """Get the message handler for this hardware.  Uses the CoolLEDX message handler."""
         return CoolLEDXMessageHandler()
-    
+
     def is_variable_height_width(self) -> bool:
         """Check if the hardware has variable height and width."""
         return False
-    
+
     def get_device_height(self):
         """Return fixed 16pixel height."""
         return 16;
@@ -234,7 +238,7 @@ class CoolLEDX(CoolLED):
     def is_implemented(self) -> bool:
         """Check if the hardware is implemented."""
         return True
-    
+
     def get_message_handler(self) -> MessageHandler:
         """Get the message handler for this hardware.  Uses the CoolLEDX message handler."""
         return CoolLEDXMessageHandler()
@@ -250,7 +254,7 @@ class CoolLEDS(CoolLED):
     def get_message_handler(self) -> MessageHandler:
         """Get the message handler for this hardware.  Uses the CoolLEDX message handler."""
         return CoolLEDXMessageHandler()
-    
+
     def implementation_note(self) -> str:
         """Get the implementation note for the hardware."""
         return "This device has not been implemented - requires special security handling.  Contributions welcome!"
