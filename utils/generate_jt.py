@@ -2,8 +2,6 @@ import json
 import argparse
 import sys
 
-from coolledx import DEFAULT_COLOR
-
 GLYPHS_SMALL = {
     'A': [0b001100, 0b011110, 0b110011, 0b110011, 0b111111, 0b110011, 0b110011, 0b000000],
     'B': [0b111110, 0b110011, 0b110011, 0b111110, 0b110011, 0b110011, 0b111110, 0b000000],
@@ -380,7 +378,7 @@ def build_jt(graffiti_data):
     }]
 
 
-def generate_jt(text, color=DEFAULT_COLOR, size='large'):
+def generate_jt(text, color="red", size='large'):
     pixels        = text_to_pixels(text, parse_color(color), size)
     graffiti_data = pixels_to_graffiti(pixels)
     obj           = build_jt(graffiti_data)

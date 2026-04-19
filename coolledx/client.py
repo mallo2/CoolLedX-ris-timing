@@ -345,10 +345,6 @@ class Client:
             response=expect_response,
         )
 
-    async def write_hexstr(self, data: str, *, expect_response: bool = False) -> None:
-        """Write hex string data to the device characteristic."""
-        await self.write_raw(bytearray.fromhex(data), expect_response=expect_response)
-
     async def disconnect(self) -> None:
         """Disconnect from the BLE device."""
         if self.bleak_client is not None:

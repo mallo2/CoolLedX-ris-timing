@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import abc
 
+
 class MessageHandler(abc.ABC):
     """Abstract class for message handler."""
 
@@ -17,7 +18,7 @@ class CoolLEDXMessageHandler(MessageHandler):
 
     def handle_message(self, message: bytearray) -> None:
         """Handle a message from the device."""
-        print(f"Received message: {message}")   
+        print(f"Received message: {message}")
 
 
 class CoolLEDMMessageHandler(MessageHandler):
@@ -25,7 +26,7 @@ class CoolLEDMMessageHandler(MessageHandler):
 
     def handle_message(self, message: bytearray) -> None:
         """Handle a message from the device."""
-        print(f"Received message: {message}")   
+        print(f"Received message: {message}")
 
 
 class CoolLEDUMessageHandler(MessageHandler):
@@ -33,8 +34,7 @@ class CoolLEDUMessageHandler(MessageHandler):
 
     def handle_message(self, message: bytearray) -> None:
         """Handle a message from the device."""
-        print(f"Received message: {message}")   
-
+        print(f"Received message: {message}")
 
 
 class CoolLEDMXMessageHandler(MessageHandler):
@@ -42,7 +42,7 @@ class CoolLEDMXMessageHandler(MessageHandler):
 
     def handle_message(self, message: bytearray) -> None:
         """Handle a message from the device."""
-        print(f"Received message: {message}")   
+        print(f"Received message: {message}")
 
 
 class CoolLEDUXMessageHandler(MessageHandler):
@@ -50,6 +50,4 @@ class CoolLEDUXMessageHandler(MessageHandler):
 
     def handle_message(self, message: bytearray) -> None:
         """Handle a message from the device."""
-        print(f"Received message: {message}")   
-
-
+        print(f"Received message: {message}")

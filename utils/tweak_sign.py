@@ -1,6 +1,3 @@
-#!/usr/bin/python3
-"""Send some commands to our sign . . ."""
-
 from __future__ import annotations
 
 import asyncio
@@ -10,29 +7,18 @@ from typing import TYPE_CHECKING, NoReturn
 
 from bleak.exc import BleakError
 
+from utils.apiCall import get_lap_time
+from utils.generate_jt import generate_jt
+from utils.lap_time_converter import format_time
+
 if TYPE_CHECKING:
     import argparse
 
 from coolledx.argparser import parse_standard_arguments
 from coolledx.client import Client
 from coolledx.commands import (
-    Initialize,
-    InvertDisplay,
-    InvertOrSomething,
-    PowerDown,
-    SendRawData,
-    # SetMusicBars,  # <- add this
-    # TurnOnOffButton,  # <- add this
-    SetAnimation,
-    SetBrightness,
-    SetImage,
-    SetJT,  # <- add this
+    SetJT,
     SetMode,
-    SetSpeed,
-    SetText,
-    ShowChargingAnimation,
-    StartupWithBatteryLevel,
-    TurnOnOffApp,
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -82,102 +68,27 @@ def handle_connection_error(
     sys.exit(1)
 
 
-async def send_funky_commands(client: Client, args: argparse.Namespace) -> None:
-    """Send funky commands to the LED sign."""
-    if not args.funky:
-        return
-
-    LOGGER.info("Sending funky command: %s", args.funky)
-    if args.funky == "invert":
-        await client.send_command(InvertDisplay(inverted=True))
-    elif args.funky == "revert":
-        await client.send_command(InvertDisplay(inverted=False))
-    elif args.funky == "charging":
-        await client.send_command(ShowChargingAnimation())
-    elif args.funky == "startup":
-        await client.send_command(StartupWithBatteryLevel(15))
-    elif args.funky == "powerdown":
-        await client.send_command(PowerDown())
-    elif args.funky == "initialize":
-        await client.send_command(Initialize())
-    elif args.funky == "invertorsomething":
-        await client.send_command(InvertOrSomething())
-    else:
-        print(f"Unknown funky command: {args.funky}")
-
-
-async def send_content_commands(client: Client, args: argparse.Namespace) -> None:
+async def send_content_commands(client: Client, args: argparse.Namespace, text) -> None:
     """Send content commands (text, image, animation, JT) to the LED sign."""
-    if args.text:
-        LOGGER.info("Sending text command: %s", args.text)
-        await client.send_command(
-            SetText(
-                args.text,
-                default_color=args.color,
-                background_color=args.background_color,
-                color_markers=(args.start_color_marker, args.end_color_marker),
-                font=args.font,
-                font_height=args.font_height,
-                render_as_text=False,
-                width_treatment=args.width_treatment,
-                height_treatment=args.height_treatment,
-                horizontal_alignment=args.horizontal_alignment,
-                vertical_alignment=args.vertical_alignment,
-            ),
-        )
-    if args.image:
-        LOGGER.info("Sending image command: %s", args.image)
-        await client.send_command(
-            SetImage(
-                args.image,
-                background_color=args.background_color,
-                width_treatment=args.width_treatment,
-                height_treatment=args.height_treatment,
-                horizontal_alignment=args.horizontal_alignment,
-                vertical_alignment=args.vertical_alignment,
-            ),
-        )
-    if args.animation:
-        LOGGER.info("Sending animation command: %s", args.animation)
-        await client.send_command(
-            SetAnimation(
-                args.animation,
-                speed=args.animation_speed,
-                background_color=args.background_color,
-                width_treatment=args.width_treatment,
-                height_treatment=args.height_treatment,
-                horizontal_alignment=args.horizontal_alignment,
-                vertical_alignment=args.vertical_alignment,
-            ),
-        )
-    if args.jtfile:
-        LOGGER.info("Sending JT file command: %s", args.jtfile)
-        await client.send_command(
-            SetJT(
-                args.jtfile,
-                background_color=args.background_color,
-                width_treatment=args.width_treatment,
-                height_treatment=args.height_treatment,
-                horizontal_alignment=args.horizontal_alignment,
-                vertical_alignment=args.vertical_alignment,
-            ),
-        )
+    LOGGER.info("Sending text command: %s", text)
+    generate_jt(text, args.color, args.size)
+    await client.send_command(
+        SetJT(
+            "generated.jt",
+             background_color="black",
+             width_treatment=args.width_treatment,
+             height_treatment=args.height_treatment,
+            horizontal_alignment=args.horizontal_alignment,
+            vertical_alignment=args.vertical_alignment,
+        ),
+    )
 
 
 async def send_setting_commands(client: Client, args: argparse.Namespace) -> None:
-    """Send setting commands (speed, brightness, mode, on/off) to the LED sign."""
-    if args.speed >= 0:
-        LOGGER.info("Setting speed: %s", args.speed)
-        await client.send_command(SetSpeed(args.speed))
-    if args.brightness >= 0:
-        LOGGER.info("Setting brightness: %s", args.brightness)
-        await client.send_command(SetBrightness(args.brightness))
+    """Send setting commands (mode) to the LED sign."""
     if args.mode >= 0:
         LOGGER.info("Setting mode: %s", args.mode)
         await client.send_command(SetMode(args.mode))
-    if args.onoff >= 0:
-        LOGGER.info("Setting on/off: %s", args.onoff)
-        await client.send_command(TurnOnOffApp(args.onoff))
 
 
 async def main() -> None:
@@ -206,13 +117,10 @@ async def main() -> None:
 
         async with Client(**client_config) as client:
             LOGGER.info("Successfully connected to LED sign")
+            lap_time = get_lap_time(args.number)
+            text = format_time(lap_time) if args.size == 'large' else f"#{args.number} {format_time(lap_time)}"
 
-            if args.raw:
-                LOGGER.info("Sending raw data command")
-                await client.send_command(SendRawData(args.raw))
-
-            await send_funky_commands(client, args)
-            await send_content_commands(client, args)
+            await send_content_commands(client, args, text)
             await send_setting_commands(client, args)
 
             LOGGER.info("All commands sent successfully")

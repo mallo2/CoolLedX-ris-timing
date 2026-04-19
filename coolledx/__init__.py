@@ -4,7 +4,23 @@ from enum import IntEnum, StrEnum
 
 __version__ = "0.0.1"
 
-__all__: list[str] = []
+__all__: list[str] = [
+    "Mode",
+    "HeightTreatment",
+    "WidthTreatment",
+    "HorizontalAlignment",
+    "VerticalAlignment",
+    "DEFAULT_FONT",
+    "DEFAULT_FONT_SIZE",
+    "DEFAULT_COLOR",
+    "DEFAULT_BACKGROUND_COLOR",
+    "DEFAULT_MODE",
+    "DEFAULT_LOGGING",
+    "DEFAULT_WIDTH_TREATMENT",
+    "DEFAULT_HEIGHT_TREATMENT",
+    "DEFAULT_HORIZONTAL_ALIGNMENT",
+    "DEFAULT_VERTICAL_ALIGNMENT",
+]
 
 
 class Mode(IntEnum):
@@ -59,16 +75,12 @@ class VerticalAlignment(StrEnum):
     BOTTOM = "bottom"
 
 
-DEFAULT_START_COLOR_MARKER = "<"
-DEFAULT_END_COLOR_MARKER = ">"
 DEFAULT_FONT = "arial"  # calibri's better, if ya got it
 DEFAULT_FONT_SIZE = 13
 DEFAULT_COLOR = "white"
 DEFAULT_BACKGROUND_COLOR = "black"
-DEFAULT_ANIMATION_SPEED = 512
 
-DEFAULT_ON_OFF = 1
-DEFAULT_MODE = Mode.LEFT
+DEFAULT_MODE = -1  # -1 means don't touch
 DEFAULT_LOGGING = "INFO"
 DEFAULT_WIDTH_TREATMENT = WidthTreatment.LEFT_AS_IS
 DEFAULT_HEIGHT_TREATMENT = HeightTreatment.CROP_PAD

@@ -23,4 +23,3 @@ def get_lap_time(car_number):
     except requests.exceptions.RequestException as e:
         print(f"Erreur API: {e}")
         return None
-

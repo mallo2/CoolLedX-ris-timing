@@ -21,6 +21,7 @@ COLOR_TYPE_MONO = 0x00
 COLOR_TYPE_7COLOR = 0x01
 COLOR_TYPE_FULLRGB = 0x02
 
+
 class CoolLED:
     """Base class for CoolLED hardware definitions."""
 
@@ -32,25 +33,27 @@ class CoolLED:
     @classmethod
     def get_class_for_string(cls, device_type: str) -> type["CoolLED"]:
         """Get the class for the given device type."""
-        if device_type == "CoolLED":
-            return CoolLEDOriginal
-        if device_type == "CoolLEDA":
-            return CoolLEDA
-        if device_type == "CoolLEDX":
-            return CoolLEDX
-        if device_type == "CoolLEDS":
-            return CoolLEDS
-        if device_type == "CoolLEDM":
-            return CoolLEDM
-        if device_type == "CoolLEDU":
-            return CoolLEDU
-        if device_type == "CoolLEDUD" or device_type == "iLedBike":
-            return CoolLEDUD
-        if device_type == "CoolLEDMX":
-            return CoolLEDMX
-        if device_type == "CoolLEDUX":
-            return CoolLEDUX
-        raise ValueError(f"Unknown device type: {device_type}")
+        match device_type:
+            case "CoolLED":
+                return CoolLEDOriginal
+            case "CoolLEDA":
+                return CoolLEDA
+            case "CoolLEDX":
+                return CoolLEDX
+            case "CoolLEDS":
+                return CoolLEDS
+            case "CoolLEDM":
+                return CoolLEDM
+            case "CoolLEDU":
+                return CoolLEDU
+            case "CoolLEDUD" | "iLedBike":
+                return CoolLEDUD
+            case "CoolLEDMX":
+                return CoolLEDMX
+            case "CoolLEDUX":
+                return CoolLEDUX
+            case _:
+                raise ValueError(f"Unknown device type: {device_type}")
 
     def __init__(self, device_width: int, device_height: int, device_color_mode: int, device_firmware_version: int) -> None:
         """Initialize the hardware definition."""
@@ -91,94 +94,114 @@ class CoolLED:
         """Get the device firmware version."""
         return self.device_firmware_version
 
-    def cmdbyte_music(self) -> int:
+    @staticmethod
+    def cmdbyte_music() -> int:
         """Get the music command byte."""
         return 0x01
 
-    def cmdbyte_text(self) -> int:
+    @staticmethod
+    def cmdbyte_text() -> int:
         """Get the text command byte."""
         return 0x02
 
-    def cmdbyte_image(self) -> int:
+    @staticmethod
+    def cmdbyte_image() -> int:
         """Get the image command byte."""
         return 0x03
 
-    def cmdbyte_animation(self) -> int:
+    @staticmethod
+    def cmdbyte_animation() -> int:
         """Get the animation command byte."""
         return 0x04
 
-    def cmdbyte_icon(self) -> int:
+    @staticmethod
+    def cmdbyte_icon() -> int:
         """Get the icon command byte."""
         return 0x05
 
     # Unproven - reference in docs somewhere
     # On the CoolLedM, this was sent with parameter 1F
     # before sending text.
-    def cmdbyte_buttonoff(self) -> int:
+    @staticmethod
+    def cmdbyte_buttonoff() -> int:
         """Get the button off command byte."""
         return 0x05
 
-    def cmdbyte_mode(self) -> int:
+    @staticmethod
+    def cmdbyte_mode() -> int:
         """Get the mode command byte."""
         return 0x06
 
-    def cmdbyte_speed(self) -> int:
+    @staticmethod
+    def cmdbyte_speed() -> int:
         """Get the speed command byte."""
         return 0x07
 
-    def cmdbyte_brightness(self) -> int:
+    @staticmethod
+    def cmdbyte_brightness() -> int:
         """Get the brightness command byte."""
         return 0x08
 
-    def cmdbyte_switch(self) -> int:
+    @staticmethod
+    def cmdbyte_switch() -> int:
         """Get the switch command byte."""
         return 0x09
 
     # Unproven - reference in docs somewhere
-    def cmdbyte_xfer(self) -> int:
+    @staticmethod
+    def cmdbyte_xfer() -> int:
         """Get the transfer command byte."""
         return 0x0A
 
     # Works on CoolLEDM
-    def cmdbyte_invertdisplay(self) -> int:
+    @staticmethod
+    def cmdbyte_invertdisplay() -> int:
         """Get the invert display command byte."""
         return 0x0C
 
     # Saw this on a CoolLEDM before sending text.
     # Was followed by 28 28 28 28 28 28 28 00
-    def cmdbyte_clearmaybe(self) -> int:
+    @staticmethod
+    def cmdbyte_clearmaybe() -> int:
         """Get the clear maybe command byte."""
         return 0x0D
 
     # Unproven - reference in docs somewhere
-    def cmdbyte_showicon(self) -> int:
+    @staticmethod
+    def cmdbyte_showicon() -> int:
         """Get the show icon command byte."""
         return 0x11
 
     # Unproven - reference in docs somewhere
-    def cmdbyte_powerdown(self) -> int:
+    @staticmethod
+    def cmdbyte_powerdown() -> int:
         """Get the power down command byte."""
         return 0x12
 
     # Unproven - this is supposed to turn on and initialize
-    def cmdbyte_buttonon(self) -> int:
+    @staticmethod
+    def cmdbyte_buttonon() -> int:
         """Get the button on command byte."""
         return 0x13
 
     # Unproven - reference in docs somewhere
-    def cmdbyte_invertorsomething(self) -> int:
+    @staticmethod
+    def cmdbyte_invertorsomething() -> int:
         """Get the invert or something command byte."""
         return 0x15
 
     # Saw the app send this to CoolLEDM and get back 01 ff 00 01 00
-    def cmdbyte_requestsomething(self) -> int:
+    @staticmethod
+    def cmdbyte_requestsomething() -> int:
         """Get the request something command byte."""
         return 0x1F
 
     # This one seems to actually work, at least on a CoolLEDM
-    def cmdbyte_initialize(self) -> int:
+    @staticmethod
+    def cmdbyte_initialize() -> int:
         """Get the initialize command byte."""
         return 0x23
+
 
 class CoolLEDOriginal(CoolLED):
     """CoolLEDOriginal hardware implementation.
@@ -209,6 +232,7 @@ class CoolLEDOriginal(CoolLED):
         """Return fixed mono color mode."""
         return COLOR_TYPE_MONO
 
+
 class CoolLEDA(CoolLED):
     """CoolLEDA hardware implementation.
     Characteristics:
@@ -227,11 +251,13 @@ class CoolLEDA(CoolLED):
 
     def get_device_height(self):
         """Return fixed 16pixel height."""
-        return 16;
+        return 16
 
     def get_device_width(self):
         """Return fixed 32pixel width."""
-        return 32;
+        return 32
+
+
 class CoolLEDX(CoolLED):
     """CoolLEDX hardware implementation."""
 
@@ -242,6 +268,7 @@ class CoolLEDX(CoolLED):
     def get_message_handler(self) -> MessageHandler:
         """Get the message handler for this hardware.  Uses the CoolLEDX message handler."""
         return CoolLEDXMessageHandler()
+
 
 class CoolLEDS(CoolLED):
     """CoolLEDS hardware implementation. (S = Secure)
@@ -259,6 +286,7 @@ class CoolLEDS(CoolLED):
         """Get the implementation note for the hardware."""
         return "This device has not been implemented - requires special security handling.  Contributions welcome!"
 
+
 class CoolLEDM(CoolLED):
     """CoolLEDM hardware implementation.
     Characteristics:
@@ -273,6 +301,7 @@ class CoolLEDM(CoolLED):
     def get_message_handler(self) -> MessageHandler:
         """Get the message handler for this hardware.  Uses the CoolLEDM message handler."""
         return CoolLEDMMessageHandler()
+
 
 class CoolLEDU(CoolLED):
     """CoolLEDU hardware implementation. (U = ?)
@@ -289,6 +318,7 @@ class CoolLEDU(CoolLED):
         """Get the message handler for this hardware.  Uses the CoolLEDU message handler."""
         return CoolLEDUMessageHandler()
 
+
 class CoolLEDUD(CoolLED):
     """CoolLEDUD hardware implementation. (UD = Urban Display (bikes))
     Characteristics:
@@ -303,6 +333,7 @@ class CoolLEDUD(CoolLED):
         """Get the message handler for this hardware.  Uses the CoolLEDU message handler."""
         return CoolLEDUMessageHandler()
 
+
 class CoolLEDMX(CoolLED):
     """CoolLEDMX hardware implementation. (MX = matrix eXtended)
     Characteristics:
@@ -316,6 +347,7 @@ class CoolLEDMX(CoolLED):
     def get_message_handler(self) -> MessageHandler:
         """Get the message handler for this hardware.  Uses the CoolLEDMX message handler."""
         return CoolLEDMXMessageHandler()
+
 
 class CoolLEDUX(CoolLED):
     """CoolLEDUX hardware implementation. (UX = ultra eXtended)
