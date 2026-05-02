@@ -130,7 +130,7 @@ def handle_connection_error(
 async def send_content_commands(client: Client, text: str, size: str) -> None:
     """Send content commands (text, image, animation, JT) to the LED sign."""
     LOGGER.info("Sending text command: %s", text)
-    generate_jt(text, "white", size)
+    generate_jt(text, size)
     await client.send_command(SetMode())
     await client.send_command(SetJT())
 

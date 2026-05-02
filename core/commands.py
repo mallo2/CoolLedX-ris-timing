@@ -10,13 +10,10 @@ if TYPE_CHECKING:
     from asyncio import Future
 
 from core.basic_protocol import BasicProtocol
-from .hardware import CoolLED
-from .render import (
+from hardware import CoolLEDX
+from render import (
     create_jt_payload,
 )
-
-DEFAULT_DEVICE_WIDTH = 96
-DEFAULT_DEVICE_HEIGHT = 16
 
 # Constants for byte escaping
 ESCAPE_THRESHOLD = 0x04
@@ -72,7 +69,7 @@ class Command(abc.ABC, BasicProtocol):
     command_status: CommandStatus = CommandStatus.NOT_STARTED
     error_code: ErrorCode = ErrorCode.UNKNOWN
     future: Future | None = None
-    hardware: CoolLED | None = None
+    hardware: CoolLEDX | None = None
 
     @abc.abstractmethod
     def get_command_raw_data_chunks(self) -> list[bytearray]:
@@ -80,65 +77,36 @@ class Command(abc.ABC, BasicProtocol):
 
     @staticmethod
     def escape_byte(byte: int) -> bytearray:
-        """Bytes < 4 need to be escaped with 0x02."""
         if byte < ESCAPE_THRESHOLD:
             return bytearray([ESCAPE_PREFIX, byte + ESCAPE_OFFSET])
         return bytearray([byte])
 
-    def set_hardware(self, hardware: CoolLED) -> None:
-        """Set the hardware type."""
+    def set_hardware(self, hardware: CoolLEDX) -> None:
         self.hardware = hardware
 
-    def get_hardware(self) -> CoolLED:
-        """Get the hardware type."""
+    def get_hardware(self) -> CoolLEDX:
         if self.hardware is None:
             raise ValueError("Hardware not set")
         return self.hardware
 
     def set_future(self, future: Future) -> None:
-        """Set the future for this command."""
         self.future = future
 
     def set_command_status(self, status: CommandStatus) -> None:
-        """Set the status of the command."""
         self.command_status = status
-
-    @property
-    def get_device_width(self) -> int:
-        """Get the device width, using default if not set."""
-        try:
-            return self.get_hardware().get_device_width()
-        except ValueError:
-            return DEFAULT_DEVICE_WIDTH
-
-    @property
-    def get_device_height(self) -> int:
-        """Get the device height, using default if not set."""
-        try:
-            return self.get_hardware().get_device_height()
-        except ValueError:
-            return DEFAULT_DEVICE_HEIGHT
 
     @staticmethod
     def expect_notify() -> bool:
-        """
-        Check if we should expect a notification from the device.
-
-        This only applies to commands that send data.
-        """
         return True
 
     @staticmethod
     def is_raw_command() -> bool:
-        """Check if this is a raw command that shouldn't be encoded/escaped."""
         return False
 
     @staticmethod
     def split_bytearray(data: bytearray, chunk_size: int) -> list[bytearray]:
-        """Split a bytearray into chunks of the specified size."""
         chunks = [data]
 
-        # split the last chunk as long as it is larger than chunk_size
         while True:
             i = len(chunks) - 1
             if len(chunks[i]) > chunk_size:
@@ -149,35 +117,23 @@ class Command(abc.ABC, BasicProtocol):
 
     @staticmethod
     def get_xor_checksum(data: bytearray) -> int:
-        """Calculate XOR checksum for the given data."""
         checksum = 0
         for b in data:
             checksum ^= b
         return checksum
 
     def chop_up_data(self, data: bytearray, command: int) -> list[bytearray]:
-        """Split data into chunks with headers and checksums."""
-        # split the content into (128-byte) chunks
         raw_chunks = self.split_bytearray(data, 128)
 
-        # add header information to the chunks
         chunks = []
         for chunk_id, raw_chunk in enumerate(raw_chunks):
-            # create bytearray of for the content of the chunk including checksum
             formatted_chunk = bytearray()
-            # unknown single 0x00 byte TODO
             formatted_chunk += b"\x00"
-            # length of the payload before it was split (16-bit)
             formatted_chunk += len(data).to_bytes(2, byteorder="big")
-            # current chunk-number (16-bit)
             formatted_chunk += chunk_id.to_bytes(2, byteorder="big")
-            # size of the chunk (8-bit)
             formatted_chunk += len(raw_chunk).to_bytes(1, byteorder="big")
-            # the data of the chunk
             formatted_chunk += raw_chunk
-            # append XOR checksum to make the complete the formatted chunk
             formatted_chunk.append(self.get_xor_checksum(formatted_chunk))
-            # Prepend our command byte for each chunk
             chunks.append(
                 bytearray().join(
                     [command.to_bytes(1, byteorder="big"), formatted_chunk],
@@ -186,36 +142,29 @@ class Command(abc.ABC, BasicProtocol):
         return chunks
 
     def get_command_chunks(self) -> list[bytearray]:
-        """Get the command as a bytearray."""
         raw_data_chunks = self.get_command_raw_data_chunks()
         if self.is_raw_command():
             return raw_data_chunks
         return [self.create_command(x) for x in raw_data_chunks]
 
     def get_command_hexstr(self, *, append_newline: bool = True) -> str:
-        """Get the command as a hex string."""
         hex_string = ""
         for chunk in self.get_command_chunks():
             hex_string += chunk.hex() + ("\n" if append_newline else "")
         return hex_string
 
     def truncated_command(self) -> str:
-        """
-        Return a string representation of the command that has been truncated to
-        32 characters.
-        """
         hexstr = self.get_command_hexstr(append_newline=False)
         if len(hexstr) > MAX_TRUNCATED_LENGTH:
             hexstr = hexstr[:MAX_TRUNCATED_LENGTH] + "..."
         return hexstr
 
     def __str__(self) -> str:
-        """Return string representation of the command."""
         return f"{self.__class__.__name__}[{self.truncated_command()}]"
 
 class SetMode(Command):
     def __init__(self) -> None:
-        """Initialize the static mode."""
+        # Initialization in the STATIC mode
         self.mode = 0x01
 
     def get_command_raw_data_chunks(self) -> list[bytearray]:
@@ -235,15 +184,11 @@ class SetJT(Command):
     def get_command_raw_data_chunks(self) -> list[bytearray]:
         raw_data, render_as_image = create_jt_payload(
             self.filename,
-            self.get_device_width,
-            self.get_device_height,
         )
         hardware = self.get_hardware()
         return self.chop_up_data(
             raw_data,
             hardware.cmdbyte_image()
-            if render_as_image
-            else hardware.cmdbyte_animation(),
         )
 
     @staticmethod

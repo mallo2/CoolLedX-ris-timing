@@ -388,7 +388,7 @@ def build_jt(graffiti_data):
     }]
 
 
-def generate_jt(text, color="red", size='large'):
+def generate_jt(text, size, color="red"):
     pixels        = text_to_pixels(text, parse_color(color), size)
     graffiti_data = pixels_to_graffiti(pixels)
     obj           = build_jt(graffiti_data)

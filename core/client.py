@@ -16,9 +16,8 @@ if TYPE_CHECKING:
     from bleak.backends.characteristic import BleakGATTCharacteristic
     from bleak.backends.device import BLEDevice
 
-from .commands import Command, CommandStatus, CoolLedError, ErrorCode
-from .decoder import CoolCommand
-from .hardware import CoolLED
+from commands import Command, CommandStatus, CoolLedError, ErrorCode
+from hardware import CoolLEDX
 
 # There is also some device with name "FS" that is picked up as a Glowaler device.
 # You can find it referenced here:
@@ -55,7 +54,7 @@ class Client:
     command_timeout: float
     connection_retries: int
     current_command: Command | None = None
-    hardware: CoolLED
+    hardware: CoolLEDX
 
     def __init__(
         self,
@@ -141,7 +140,9 @@ class Client:
                     raise BleakError("Device has no name")
                 self.ble_device = ble_device
                 self.bleak_client = bleak_client
-                self.hardware = CoolLED.get_class_for_string(ble_device.name)(height, width, color_mode, firmware_version)
+                if ble_device.name != "CoolLEDX" or width != 96 or height != 16 :
+                    raise ValueError("Device is not compatible")
+                self.hardware = CoolLEDX(color_mode, firmware_version)
                 break
             except (BleakError, TimeoutError, asyncio.CancelledError) as e:
                 LOGGER.warning(
@@ -168,7 +169,7 @@ class Client:
             self.handle_notify,
         )
 
-    async def _discover_device(self) -> tuple[BLEDevice | None, int, int, int, int]:
+    async def _discover_device(self) -> tuple[BLEDevice | None, int, int]:
         """
         Discover a CoolLED* device and extract height/width/color/firmware from advertisement data.
 
@@ -222,16 +223,12 @@ class Client:
                     )
                     continue
 
-                height = value[6]
-                width = value[7] << 8 | value[8]
                 color_mode = value[9]
                 firmware_version = value[10]
 
                 LOGGER.debug(
-                    "Device %s dimensions: %dx%d - color mode: %d - firmware version: %d",
+                    "Device %s - color mode: %d - firmware version: %d",
                     device.address,
-                    width,
-                    height,
                     color_mode,
                     firmware_version,
                 )
@@ -244,11 +241,11 @@ class Client:
                 )
                 continue
             else:
-                return device, height, width, color_mode, firmware_version
+                return device, color_mode, firmware_version
 
         # Device not found
         LOGGER.debug("Target device not found in scan results")
-        return None, 0, 0, 0, 0
+        return None, 0, 0
 
     def handle_notify(self, sender: BleakGATTCharacteristic, data: bytearray) -> None:
         """
@@ -266,8 +263,6 @@ class Client:
             )
         else:
             LOGGER.debug("Received notification: from %s data: %s", sender, data.hex())
-            cmd = CoolCommand(False, "Sign", "Us", sender.handle, data)  # noqa: FBT003
-            LOGGER.debug("Received notification (decoded): %s", cmd)
             if self.current_command:
                 # TODO:  This isn't entirely accurate.  I just don't know how to
                 #        properly interpret the errors from the devices yet.
@@ -298,8 +293,6 @@ class Client:
         try:
             for chunk in chunks:
                 LOGGER.debug("Sending chunk: %s", chunk.hex())
-                cmd = CoolCommand(True, "Us", "Sign", 0x00, chunk)  # noqa: FBT003
-                LOGGER.debug("Sending command: %s", cmd)
                 self.current_command = command
                 command.command_status = CommandStatus.TRANSMITTED
                 command.set_future(asyncio.get_event_loop().create_future())
