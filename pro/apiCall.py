@@ -1,11 +1,12 @@
 import logging
+import os
 import requests
 
 LOGGER = logging.getLogger(__name__)
 
 def get_lap_time(car_number,timeout = 10):
-    api_url = "https://live.ris-timing.be/api/live-timing"
-    uuid = "00000000-0000-0000-0000-000000000002"
+    api_url = os.getenv("API_URL")
+    uuid = os.getenv("UUID")
 
     headers = {
         "User-Agent": "Mozilla/5.0",

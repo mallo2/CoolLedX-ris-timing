@@ -1,40 +1,16 @@
 """CoolLEDX driver package."""
 
-from enum import IntEnum, StrEnum
+from enum import StrEnum
 
 __version__ = "0.0.1"
 
 __all__: list[str] = [
-    "Mode",
     "HeightTreatment",
     "WidthTreatment",
     "HorizontalAlignment",
     "VerticalAlignment",
-    "DEFAULT_FONT",
-    "DEFAULT_FONT_SIZE",
-    "DEFAULT_COLOR",
-    "DEFAULT_BACKGROUND_COLOR",
-    "DEFAULT_MODE",
-    "DEFAULT_LOGGING",
-    "DEFAULT_WIDTH_TREATMENT",
-    "DEFAULT_HEIGHT_TREATMENT",
-    "DEFAULT_HORIZONTAL_ALIGNMENT",
-    "DEFAULT_VERTICAL_ALIGNMENT",
+    "DEFAULT_BACKGROUND_COLOR"
 ]
-
-
-class Mode(IntEnum):
-    """The ways that text can move."""
-
-    STATIC = 0x01
-    LEFT = 0x02
-    RIGHT = 0x03
-    UP = 0x04
-    DOWN = 0x05
-    SNOWFLAKE = 0x06
-    PICTURE = 0x07
-    LASER = 0x08
-
 
 class HeightTreatment(StrEnum):
     """
@@ -75,14 +51,4 @@ class VerticalAlignment(StrEnum):
     BOTTOM = "bottom"
 
 
-DEFAULT_FONT = "arial"  # calibri's better, if ya got it
-DEFAULT_FONT_SIZE = 13
-DEFAULT_COLOR = "white"
 DEFAULT_BACKGROUND_COLOR = "black"
-
-DEFAULT_MODE = -1  # -1 means don't touch
-DEFAULT_LOGGING = "INFO"
-DEFAULT_WIDTH_TREATMENT = WidthTreatment.LEFT_AS_IS
-DEFAULT_HEIGHT_TREATMENT = HeightTreatment.CROP_PAD
-DEFAULT_HORIZONTAL_ALIGNMENT = HorizontalAlignment.NONE
-DEFAULT_VERTICAL_ALIGNMENT = VerticalAlignment.CENTER

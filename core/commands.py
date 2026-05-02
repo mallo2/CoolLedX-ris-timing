@@ -9,16 +9,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from asyncio import Future
 
-from coolledx import (
-    DEFAULT_BACKGROUND_COLOR,
-    HeightTreatment,
-    HorizontalAlignment,
-    Mode,
-    VerticalAlignment,
-    WidthTreatment,
-)
-
-from coolledx.basic_protocol import BasicProtocol
+from core.basic_protocol import BasicProtocol
 from .hardware import CoolLED
 from .render import (
     create_jt_payload,
@@ -223,65 +214,29 @@ class Command(abc.ABC, BasicProtocol):
         return f"{self.__class__.__name__}[{self.truncated_command()}]"
 
 class SetMode(Command):
-    """Set the text movement style for the scroller."""
-
-    mode: Mode
-
-    def __init__(self, mode: Mode = Mode.STATIC) -> None:
-        """Initialize with movement mode."""
-        self.mode = mode
+    def __init__(self) -> None:
+        """Initialize the static mode."""
+        self.mode = 0x01
 
     def get_command_raw_data_chunks(self) -> list[bytearray]:
-        """Get the set mode command data."""
-        return [
-            bytearray.fromhex(f"{self.get_hardware().cmdbyte_mode():02x} {self.mode:02X}"),
-        ]
+        return [bytearray.fromhex(f"{self.get_hardware().cmdbyte_mode():02x} {self.mode:02X}"),]
 
     @staticmethod
     def expect_notify() -> bool:
-        """Check if we should expect a notification from the device."""
         return False
 
 
 class SetJT(Command):
-    """Set the display image by loading from a JT file."""
-
     filename: str
-    width_treatment: WidthTreatment = WidthTreatment.LEFT_AS_IS
-    height_treatment: HeightTreatment = HeightTreatment.CROP_PAD
-    vertical_alignment: VerticalAlignment = VerticalAlignment.CENTER
-    horizontal_alignment: HorizontalAlignment = HorizontalAlignment.NONE
-    background_color: str
 
-    def __init__(
-        self,
-        filename: str = "generated.jt",
-        background_color: str = DEFAULT_BACKGROUND_COLOR,
-        width_treatment: WidthTreatment = WidthTreatment.LEFT_AS_IS,
-        height_treatment: HeightTreatment = HeightTreatment.CROP_PAD,
-        horizontal_alignment: HorizontalAlignment = HorizontalAlignment.NONE,
-        vertical_alignment: VerticalAlignment = VerticalAlignment.CENTER,
-    ) -> None:
-        """Initialize with JT filename and display options."""
+    def __init__(self, filename: str = "generated.jt") -> None:
         self.filename = filename
-        self.background_color = background_color
-        self.width_treatment = width_treatment
-        self.height_treatment = height_treatment
-        self.horizontal_alignment = horizontal_alignment
-        self.vertical_alignment = vertical_alignment
 
     def get_command_raw_data_chunks(self) -> list[bytearray]:
-        """Get the set JT command data."""
-        # raw_data = create_image_payload(
         raw_data, render_as_image = create_jt_payload(
             self.filename,
             self.get_device_width,
             self.get_device_height,
-            self.background_color,
-            self.width_treatment,
-            self.height_treatment,
-            self.horizontal_alignment,
-            self.vertical_alignment,
         )
         hardware = self.get_hardware()
         return self.chop_up_data(
@@ -293,5 +248,4 @@ class SetJT(Command):
 
     @staticmethod
     def expect_notify() -> bool:
-        """Check if we should expect a notification from the device."""
         return True

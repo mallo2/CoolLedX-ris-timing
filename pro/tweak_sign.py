@@ -4,22 +4,19 @@ import asyncio
 import logging
 import sys
 from time import sleep
-from typing import TYPE_CHECKING, NoReturn
+from typing import NoReturn
 
 from bleak.exc import BleakError
 from bleak import BleakScanner
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
 
-from apiCall import get_lap_time
-from generate_jt import generate_jt
-from lap_time_converter import format_time
+from pro.apiCall import get_lap_time
+from pro.generate_jt import generate_jt
+from pro.lap_time_converter import format_time
 
-if TYPE_CHECKING:
-    import argparse
-
-from coolledx.client import Client
-from coolledx.commands import (
+from core.client import Client
+from core.commands import (
     SetJT,
     SetMode,
 )

@@ -1,29 +1,11 @@
+# CoolLEDX Ris-Timing
 
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/UpDryTwist/coolledx-driver/graphs/commit-activity)
-[![PyPI download month](https://img.shields.io/pypi/dm/coolledx.svg)](https://pypi.python.org/pypi/coolledx-driver/)
-[![PyPI version fury.io](https://badge.fury.io/py/coolledx.svg)](https://pypi.python.org/pypi/coolledx-driver/)
-[![Documentation Status](https://readthedocs.org/projects/coolledx-driver/badge/?version=latest)](http://coolledx-driver.readthedocs.io/?badge=latest)
-[![PR welcome issues still open](https://badgen.net/https/pr-welcome-badge.vercel.app/api/badge/UpDryTwist/coolledx-driver)](https://github.com/UpDryTwist/coolledx-driver/issues?q=archived:false+is:issue+is:open+sort:updated-desc+label%3A%22help%20wanted%22%2C%22good%20first%20issue%22)
-[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)
-[![buymecoffee](https://img.shields.io/badge/-buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/updrytwist)
+Avant tout, ce projet provient du repository CoolLedX-driver de UpDryTwist. 
+Il s'agit d'un projet de pilote pour les panneaux LED CoolLEDX, permettant de contrôler ces panneaux via Bluetooth. Le projet est écrit en Python et utilise la bibliothèque Bleak pour les interactions Bluetooth.
+Tout le code de ce projet est lié au dossier core de ce projet et possède sa license MIT d'origine.
 
-# CoolLEDX Driver
-
-This package implements a Python driver for the CoolLEDX LED strips (i.e., at least
-some of those strips that are controlled by the CoolLED1248 app). The strips receive
-commands via Bluetooth, and can generally be programmed to display text (which is
-actually just a rendered image of the text), images, or animations. You can get these
-strips pretty cheaply on AliExpress -- just be sure that you see a picture of the
-CoolLED1248 app on the product page, as this driver won't work with any other sort of
-strip. That said, they're pretty ubiquitous, at least at the time of this writing (
-December 2024).
-
-HOWEVER - be aware that the company has come out with a next generation (apparently),
-which identifies as CoolLEDM - and this driver will not work with those strips. If you
-have one, and are keen to reverse engineer the protocol, I'd be happy to implement it!
-See below for some thoughts/tools for reverse engineering (I started, then just ran out
-of
-further exploration time).
+Ce projet a pour but d'exploiter les panneaux LED CoolLEDX pour faire du panneautage lors de course de sports mécaniques, en affichant des informations utiles au pilote (temps au tour, position, etc.).
+Tout le code de ce projet est lié au dossier pro de ce projet et possède sa propre license.
 
 ## Usage
 
