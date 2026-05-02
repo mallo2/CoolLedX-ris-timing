@@ -265,16 +265,16 @@ GLYPHS_LARGE = {
         0b0000000000, 0b0000000000, 0b0000000000,
     ],
     ':': [
-        0b0000000000, 0b0000000000, 0b0011000000, 0b0011000000,
-        0b0000000000, 0b0000000000, 0b0000000000, 0b0011000000,
-        0b0011000000, 0b0000000000, 0b0000000000,
-        0b0000000000, 0b0000000000, 0b0000000000,
+        0b0000, 0b0000, 0b0110, 0b0110,
+        0b0000, 0b0000, 0b0000, 0b0110,
+        0b0110, 0b0000, 0b0000,
+        0b0000, 0b0000, 0b0000,
     ],
     ',': [
-        0b0000000000, 0b0000000000, 0b0000000000, 0b0000000000,
-        0b0000000000, 0b0000000000, 0b0000000000, 0b0000000000,
-        0b0011000000, 0b0011000000, 0b0011000000,
-        0b0110000000, 0b0000000000, 0b0000000000,
+        0b0000, 0b0000, 0b0000, 0b0000,
+        0b0000, 0b0000, 0b0000, 0b0000,
+        0b0110, 0b0110, 0b0110,
+        0b1100, 0b0000, 0b0000,
     ],
     '#': [
         0b0110011000, 0b0110011000, 0b1111111100, 0b1111111100,
@@ -306,6 +306,10 @@ SIZE_PARAMS = {
 PANEL_W = 96
 PANEL_H = 16
 
+CUSTOM_WIDTHS = {
+    ('large', ':'): (4, 4),
+    ('large', ','): (4, 4),
+}
 
 COLORS = {
     'red':     (255,   0,   0),
@@ -318,7 +322,7 @@ COLORS = {
 }
 
 def text_to_pixels(text, color, size='large'):
-    start_x = 3 if size == 'small' else 6
+    start_x = 3 if size == 'small' else 5
     start_y = 5 if size == 'small' else 2
 
     p = SIZE_PARAMS[size]
@@ -334,15 +338,21 @@ def text_to_pixels(text, color, size='large'):
         if ch not in glyphs:
             print(f"  Avertissement : '{ch}' non supporté, ignoré.", file=sys.stderr)
             continue
+
+        if (size, ch) in CUSTOM_WIDTHS:
+            ch_bits, ch_width = CUSTOM_WIDTHS[(size, ch)]
+        else:
+            ch_bits, ch_width = bits, char_width
+
         glyph = glyphs[ch]
         for row_idx, byte in enumerate(glyph):
-            for bit in range(bits - 1, -1, -1):
-                col = cx + (bits - 1 - bit)
-                r   = start_y + row_idx
+            for bit in range(ch_bits - 1, -1, -1):
+                col = cx + (ch_bits - 1 - bit)
+                r = start_y + row_idx
                 if 0 <= col < PANEL_W and 0 <= r < PANEL_H:
                     if (byte >> bit) & 1:
                         pixels[r][col] = color
-        cx += char_width + char_gap
+        cx += ch_width + char_gap
         if cx >= PANEL_W:
             break
 

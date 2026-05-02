@@ -227,7 +227,7 @@ class SetMode(Command):
 
     mode: Mode
 
-    def __init__(self, mode: Mode) -> None:
+    def __init__(self, mode: Mode = Mode.STATIC) -> None:
         """Initialize with movement mode."""
         self.mode = mode
 
@@ -243,38 +243,6 @@ class SetMode(Command):
         return False
 
 
-class SetMusicBars(Command):
-    """Set music bars: 8 bars of height (byte), each with a color from 1-7."""
-
-    heights: bytearray
-    colors: bytearray
-
-    def __init__(self, heights: bytearray, colors: bytearray) -> None:
-        """Initialize with heights and colors arrays (8 bytes each)."""
-        if len(heights) != MUSIC_BAR_COUNT:
-            raise ValueError(f"Heights must be 8 bytes, not {len(heights)}")
-        if len(colors) != MUSIC_BAR_COUNT:
-            raise ValueError(f"Colors must be 8 bytes, not {len(colors)}")
-        self.heights = heights
-        self.colors = colors
-
-    def get_command_raw_data_chunks(self) -> list[bytearray]:
-        """Get the set music bars command data."""
-        # At least with the CoolLEDM, this is 8 bytes total being sent.  I'm suspecting
-        # that heights and colors are integrated into a half byte each.
-        return [
-            bytearray.fromhex(
-                f"{self.get_hardware().cmdbyte_music():02x} {self.heights.hex()} {self.colors.hex()}",
-            ),
-        ]
-
-    @staticmethod
-    def expect_notify() -> bool:
-        """Check if we should expect a notification from the device."""
-        return False
-
-
-
 class SetJT(Command):
     """Set the display image by loading from a JT file."""
 
@@ -287,7 +255,7 @@ class SetJT(Command):
 
     def __init__(
         self,
-        filename: str,
+        filename: str = "generated.jt",
         background_color: str = DEFAULT_BACKGROUND_COLOR,
         width_treatment: WidthTreatment = WidthTreatment.LEFT_AS_IS,
         height_treatment: HeightTreatment = HeightTreatment.CROP_PAD,
