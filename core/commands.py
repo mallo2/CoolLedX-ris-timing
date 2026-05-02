@@ -10,10 +10,8 @@ if TYPE_CHECKING:
     from asyncio import Future
 
 from core.basic_protocol import BasicProtocol
-from hardware import CoolLEDX
-from render import (
-    create_jt_payload,
-)
+from core.hardware import CoolLEDX
+from core.render import create_jt_payload
 
 # Constants for byte escaping
 ESCAPE_THRESHOLD = 0x04
@@ -182,9 +180,7 @@ class SetJT(Command):
         self.filename = filename
 
     def get_command_raw_data_chunks(self) -> list[bytearray]:
-        raw_data, render_as_image = create_jt_payload(
-            self.filename,
-        )
+        raw_data = create_jt_payload(self.filename)
         hardware = self.get_hardware()
         return self.chop_up_data(
             raw_data,

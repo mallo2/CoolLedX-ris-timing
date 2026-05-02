@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import sys
+from dotenv import load_dotenv
 from time import sleep
 from typing import NoReturn
 
@@ -189,6 +190,7 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
+    load_dotenv()
     try:
         asyncio.run(main())
     except KeyboardInterrupt:

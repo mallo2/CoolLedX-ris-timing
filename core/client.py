@@ -16,8 +16,8 @@ if TYPE_CHECKING:
     from bleak.backends.characteristic import BleakGATTCharacteristic
     from bleak.backends.device import BLEDevice
 
-from commands import Command, CommandStatus, CoolLedError, ErrorCode
-from hardware import CoolLEDX
+from core.commands import Command, CommandStatus, CoolLedError, ErrorCode
+from core.hardware import CoolLEDX
 
 # There is also some device with name "FS" that is picked up as a Glowaler device.
 # You can find it referenced here:
@@ -117,7 +117,7 @@ class Client:
         while retries_remaining > 0:
             try:
                 retries_remaining -= 1
-                ble_device, height, width, color_mode, firmware_version = await self._discover_device()
+                ble_device, color_mode, firmware_version = await self._discover_device()
 
                 if ble_device is None:
                     LOGGER.debug("Unable to locate a CoolLED* device when scanning.")
@@ -140,8 +140,6 @@ class Client:
                     raise BleakError("Device has no name")
                 self.ble_device = ble_device
                 self.bleak_client = bleak_client
-                if ble_device.name != "CoolLEDX" or width != 96 or height != 16 :
-                    raise ValueError("Device is not compatible")
                 self.hardware = CoolLEDX(color_mode, firmware_version)
                 break
             except (BleakError, TimeoutError, asyncio.CancelledError) as e:
@@ -223,6 +221,8 @@ class Client:
                     )
                     continue
 
+                height = value[6]
+                width = value[7] << 8 | value[8]
                 color_mode = value[9]
                 firmware_version = value[10]
 
@@ -232,6 +232,9 @@ class Client:
                     color_mode,
                     firmware_version,
                 )
+
+                if width != 96 or height != 16:
+                    raise ValueError("Device is not compatible")
 
             except (IndexError, StopIteration) as e:
                 LOGGER.warning(
