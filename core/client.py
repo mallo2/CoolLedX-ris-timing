@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Self, Any, Coroutine
 
 from bleak import (
     BleakClient,
-    BleakScanner,
+    BleakScanner, BLEDevice,
 )
 from bleak.exc import BleakError
 
@@ -84,8 +84,6 @@ class Client:
                 LOGGER.debug("Connecting to device: %s", ble_device)
                 await bleak_client.connect()
                 LOGGER.debug("Connected to device: %s", ble_device)
-                if not ble_device.name:
-                    raise BleakError("Device has no name")
                 self.ble_device = ble_device
                 self.bleak_client = bleak_client
                 break
@@ -105,14 +103,12 @@ class Client:
                     "Retrying connection...",
                 )
                 await asyncio.sleep(1)
-        if self.bleak_client is None:
-            raise TypeError("bleak_client should not be None after connection.")
         await self.bleak_client.start_notify(
             self.characteristic_uuid,
             self.handle_notify,
         )
 
-    async def _discover_device(self) -> tuple[BLEDevice] | None:
+    async def _discover_device(self) -> BLEDevice | None:
         LOGGER.debug("Scanning for devices...")
 
         devices = await BleakScanner.discover(
@@ -128,8 +124,6 @@ class Client:
             if self.device_address is not None:
                 if device.address.lower() != self.device_address.lower():
                     continue
-            elif device.name != target_device_name:
-                continue
 
             LOGGER.debug("Found target device: %s (%s)", device.name, device.address)
 
@@ -168,13 +162,7 @@ class Client:
         return None
 
     def handle_notify(self, sender: BleakGATTCharacteristic, data: bytearray) -> None:
-        if sender.uuid != self.characteristic_uuid:
-            LOGGER.warning(
-                "Received notification from unexpected characteristic: from %s data: %s",
-                sender,
-                data.hex(),
-            )
-        else:
+        if sender.uuid == self.characteristic_uuid:
             LOGGER.debug("Received notification: from %s data: %s", sender, data.hex())
             if self.current_command:
                 self.current_command.set_command_status(CommandStatus.ACKNOWLEDGED)
@@ -204,24 +192,6 @@ class Client:
                 await self.write_raw(chunk, expect_response=command.expect_notify())
                 if command.expect_notify() and command.future:
                     await asyncio.wait_for(command.future, timeout=self.command_timeout)
-                    if command.command_status == CommandStatus.TRANSMITTED:
-                        LOGGER.error(
-                            "Command %s did not receive a notification within %s seconds.",
-                            command,
-                            self.command_timeout,
-                        )
-                        break
-                    if command.command_status == CommandStatus.ERROR:
-                        error_name = ErrorCode.get_error_code_name(command.error_code)
-                        LOGGER.error(
-                            "Command %s received an error response: %s(%s)",
-                            command,
-                            error_name,
-                            command.error_code,
-                        )
-                        raise Exception(
-                            f"Command {command} received an error response: {error_name}({command.error_code})",
-                        )
 
         except Exception:
             LOGGER.exception("Error sending command: %s", command)

@@ -11,24 +11,6 @@ from core.basic_protocol import BasicProtocol
 from core.hardware import CoolLEDX
 from core.render import create_jt_payload
 
-class ErrorCode(Enum):
-    UNKNOWN = -1
-    SUCCESS = 0x00
-    TRANSMISSION_FAILED = 0x01
-    DEVICE_ABNORMALITY = 0x02
-    DATA_ERROR = 0x03
-    DATA_LENGTH_ERROR = 0x04
-    DATA_ID_ERROR = 0x05
-    DATA_CHECKSUM_ERROR = 0x06
-
-    @staticmethod
-    def get_error_code_name(error_code: int | ErrorCode) -> str:
-        try:
-            return ErrorCode(error_code).name
-        except ValueError:
-            return f"Unknown error code: {error_code:02X}"
-
-
 class CommandStatus(Enum):
     NOT_STARTED = 0
     TRANSMITTED = 1
@@ -38,19 +20,12 @@ class CommandStatus(Enum):
 
 class Command(abc.ABC, BasicProtocol):
     command_status: CommandStatus = CommandStatus.NOT_STARTED
-    error_code: ErrorCode = ErrorCode.UNKNOWN
     future: Future | None = None
     hardware: CoolLEDX | None = None
 
     @abc.abstractmethod
     def get_command_raw_data_chunks(self) -> list[bytearray]:
         """Get the set of commands as a bytearray."""
-
-    @staticmethod
-    def escape_byte(byte: int) -> bytearray:
-        if byte < 0x04:
-            return bytearray([0x02, byte + 0x04])
-        return bytearray([byte])
 
     def set_future(self, future: Future) -> None:
         self.future = future
@@ -61,10 +36,6 @@ class Command(abc.ABC, BasicProtocol):
     @staticmethod
     def expect_notify() -> bool:
         return True
-
-    @staticmethod
-    def is_raw_command() -> bool:
-        return False
 
     @staticmethod
     def split_bytearray(data: bytearray, chunk_size: int) -> list[bytearray]:
@@ -106,24 +77,7 @@ class Command(abc.ABC, BasicProtocol):
 
     def get_command_chunks(self) -> list[bytearray]:
         raw_data_chunks = self.get_command_raw_data_chunks()
-        if self.is_raw_command():
-            return raw_data_chunks
         return [self.create_command(x) for x in raw_data_chunks]
-
-    def get_command_hexstr(self, *, append_newline: bool = True) -> str:
-        hex_string = ""
-        for chunk in self.get_command_chunks():
-            hex_string += chunk.hex() + ("\n" if append_newline else "")
-        return hex_string
-
-    def truncated_command(self) -> str:
-        hexstr = self.get_command_hexstr(append_newline=False)
-        if len(hexstr) > 32:
-            hexstr = hexstr[:32] + "..."
-        return hexstr
-
-    def __str__(self) -> str:
-        return f"{self.__class__.__name__}[{self.truncated_command()}]"
 
 class SetMode(Command):
     def __init__(self) -> None:

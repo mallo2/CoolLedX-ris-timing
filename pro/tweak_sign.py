@@ -178,6 +178,7 @@ async def main() -> None:
                     await send_content_commands(client, text, text_size)
                     LOGGER.info("All commands sent successfully")
                     print("Mise à jour du panneau terminée avec succès")
+                    break
                     sleep(1)
 
     except (TimeoutError, BleakError, asyncio.CancelledError) as e:
