@@ -1,5 +1,3 @@
-"""Commands for the CoolLEDX package."""
-
 from __future__ import annotations
 
 import abc
@@ -13,27 +11,7 @@ from core.basic_protocol import BasicProtocol
 from core.hardware import CoolLEDX
 from core.render import create_jt_payload
 
-# Constants for byte escaping
-ESCAPE_THRESHOLD = 0x04
-ESCAPE_PREFIX = 0x02
-ESCAPE_OFFSET = 0x04
-
-# Constants for string truncation
-MAX_TRUNCATED_LENGTH = 32
-
-# Constants for value ranges
-MAX_BYTE_VALUE = 0xFF
-MIN_BYTE_VALUE = 0x00
-MUSIC_BAR_COUNT = 8
-
-
-class CoolLedError(Exception):
-    """Base class for exceptions in this module."""
-
-
 class ErrorCode(Enum):
-    """Error codes returned by the device."""
-
     UNKNOWN = -1
     SUCCESS = 0x00
     TRANSMISSION_FAILED = 0x01
@@ -45,7 +23,6 @@ class ErrorCode(Enum):
 
     @staticmethod
     def get_error_code_name(error_code: int | ErrorCode) -> str:
-        """Return a human-readable error message for the given error code."""
         try:
             return ErrorCode(error_code).name
         except ValueError:
@@ -53,8 +30,6 @@ class ErrorCode(Enum):
 
 
 class CommandStatus(Enum):
-    """Status of the currently executing command."""
-
     NOT_STARTED = 0
     TRANSMITTED = 1
     ACKNOWLEDGED = 2
@@ -62,8 +37,6 @@ class CommandStatus(Enum):
 
 
 class Command(abc.ABC, BasicProtocol):
-    """Abstract base class for commands."""
-
     command_status: CommandStatus = CommandStatus.NOT_STARTED
     error_code: ErrorCode = ErrorCode.UNKNOWN
     future: Future | None = None
@@ -75,17 +48,9 @@ class Command(abc.ABC, BasicProtocol):
 
     @staticmethod
     def escape_byte(byte: int) -> bytearray:
-        if byte < ESCAPE_THRESHOLD:
-            return bytearray([ESCAPE_PREFIX, byte + ESCAPE_OFFSET])
+        if byte < 0x04:
+            return bytearray([0x02, byte + 0x04])
         return bytearray([byte])
-
-    def set_hardware(self, hardware: CoolLEDX) -> None:
-        self.hardware = hardware
-
-    def get_hardware(self) -> CoolLEDX:
-        if self.hardware is None:
-            raise ValueError("Hardware not set")
-        return self.hardware
 
     def set_future(self, future: Future) -> None:
         self.future = future
@@ -153,8 +118,8 @@ class Command(abc.ABC, BasicProtocol):
 
     def truncated_command(self) -> str:
         hexstr = self.get_command_hexstr(append_newline=False)
-        if len(hexstr) > MAX_TRUNCATED_LENGTH:
-            hexstr = hexstr[:MAX_TRUNCATED_LENGTH] + "..."
+        if len(hexstr) > 32:
+            hexstr = hexstr[:32] + "..."
         return hexstr
 
     def __str__(self) -> str:
@@ -166,7 +131,7 @@ class SetMode(Command):
         self.mode = 0x01
 
     def get_command_raw_data_chunks(self) -> list[bytearray]:
-        return [bytearray.fromhex(f"{self.get_hardware().cmdbyte_mode():02x} {self.mode:02X}"),]
+        return [bytearray.fromhex(f"{CoolLEDX.cmdbyte_mode():02x} {self.mode:02X}"),]
 
     @staticmethod
     def expect_notify() -> bool:
@@ -181,10 +146,9 @@ class SetJT(Command):
 
     def get_command_raw_data_chunks(self) -> list[bytearray]:
         raw_data = create_jt_payload(self.filename)
-        hardware = self.get_hardware()
         return self.chop_up_data(
             raw_data,
-            hardware.cmdbyte_image()
+            CoolLEDX.cmdbyte_image()
         )
 
     @staticmethod
